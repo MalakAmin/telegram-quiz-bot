@@ -1,2 +1,2 @@
-python-telegram-bot==13.15  # إصدار مستقر
-python-dotenv==1.0.0
+python-telegram-bot[job-queue]==20.7
+Pillow==10.1.0
