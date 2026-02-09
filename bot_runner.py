@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-تشغيل البوت مع إعادة التشغيل التلقائي
+تشغيل البوت بشكل مستمر
 """
 
 import os
@@ -11,78 +11,58 @@ import logging
 # إعداد التسجيل
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s: %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
-def run_bot():
-    """تشغيل البوت"""
-    try:
-        # إضافة المسار الحالي
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        if current_dir not in sys.path:
-            sys.path.insert(0, current_dir)
-        
-        from main import main
-        logger.info("🚀 بدء تشغيل البوت...")
-        main()
-        return True
-    except KeyboardInterrupt:
-        logger.info("👋 تم إيقاف البوت")
-        return True
-    except Exception as e:
-        logger.error(f"❌ خطأ: {e}")
-        return False
-
 def main():
     """الدالة الرئيسية"""
-    logger.info("🎓 بدء نظام بوت الاختبارات")
+    logger.info("🚀 بدء تشغيل بوت الاختبارات")
     
     # التحقق من التوكن
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     if not token:
         logger.error("""
-        ⚠️  **خطأ: التوكن غير موجود**
+        ⚠️  **التوكن غير موجود!**
         
-        كيفية الإصلاح:
-        1. سجل في https://render.com
-        2. اختر خدمتك
-        3. اضغط على Environment
-        4. أضف متغير بيئة جديد:
+        كيفية الإصلاح على Render:
+        1. اضغط على اسم الخدمة
+        2. اختر Environment
+        3. أضف متغير جديد:
            - المفتاح: TELEGRAM_BOT_TOKEN
-           - القيمة: التوكن الذي حصلت عليه من @BotFather
-        
-        للحصول على التوكن:
-        1. افتح Telegram
-        2. ابحث عن @BotFather
-        3. أرسل /newbot
-        4. اتبع التعليمات
+           - القيمة: توكن البوت من @BotFather
         """)
         return
     
-    logger.info(f"✅ التوكن موجود (يبدأ بـ: {token[:10]}...)")
-    logger.info(f"🐍 إصدار Python: {sys.version}")
+    logger.info(f"✅ التوكن موجود: {token[:10]}...")
+    
+    # إضافة المسار
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
     # تشغيل البوت مع إعادة المحاولة
-    max_attempts = 5
-    attempt = 1
+    attempts = 0
+    max_attempts = 10
     
-    while attempt <= max_attempts:
-        logger.info(f"🔧 المحاولة {attempt}/{max_attempts}")
-        
-        if run_bot():
+    while attempts < max_attempts:
+        try:
+            logger.info(f"🔧 المحاولة {attempts + 1}/{max_attempts}")
+            
+            from main import main as run_bot
+            run_bot()
+            
+        except KeyboardInterrupt:
+            logger.info("👋 تم إيقاف البوت")
             break
-        
-        wait_time = attempt * 10  # 10, 20, 30, 40, 50 ثانية
-        logger.info(f"⏳ إعادة المحاولة بعد {wait_time} ثانية...")
-        time.sleep(wait_time)
-        attempt += 1
+            
+        except Exception as e:
+            logger.error(f"❌ خطأ: {e}")
+            attempts += 1
+            wait = min(30 * attempts, 300)
+            logger.info(f"⏳ إعادة التشغيل بعد {wait} ثانية...")
+            time.sleep(wait)
     
-    if attempt > max_attempts:
-        logger.error("🛑 فشل تشغيل البوت بعد جميع المحاولات")
-    else:
-        logger.info("✅ تم إنهاء البوت")
+    if attempts >= max_attempts:
+        logger.error("🛑 فشل بعد جميع المحاولات")
 
 if __name__ == "__main__":
     main()
