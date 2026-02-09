@@ -1,68 +1,49 @@
 #!/usr/bin/env python3
 """
-تشغيل البوت بشكل مستمر
+تشغيل البوت مع مراقبة الأخطاء
 """
 
 import os
 import sys
 import time
-import logging
 
-# إعداد التسجيل
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s: %(message)s',
-    level=logging.INFO
-)
-logger = logging.getLogger(__name__)
+print("🚀 بدء تشغيل بوت تيليجرام...")
+print(f"🐍 إصدار Python: {sys.version}")
 
-def main():
-    """الدالة الرئيسية"""
-    logger.info("🚀 بدء تشغيل بوت الاختبارات")
+# التأكد من التوكن
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+if not TOKEN:
+    print("❌ خطأ: TELEGRAM_BOT_TOKEN غير موجود!")
+    print("أضفه في Environment Variables على Render")
+    sys.exit(1)
+
+print(f"✅ التوكن موجود: {TOKEN[:10]}...")
+
+# إضافة المسار
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# محاولات متعددة
+max_attempts = 5
+for attempt in range(1, max_attempts + 1):
+    print(f"\n🔧 المحاولة {attempt}/{max_attempts}")
     
-    # التحقق من التوكن
-    token = os.getenv('TELEGRAM_BOT_TOKEN')
-    if not token:
-        logger.error("""
-        ⚠️  **التوكن غير موجود!**
+    try:
+        from main import main
+        main()
+        break
         
-        كيفية الإصلاح على Render:
-        1. اضغط على اسم الخدمة
-        2. اختر Environment
-        3. أضف متغير جديد:
-           - المفتاح: TELEGRAM_BOT_TOKEN
-           - القيمة: توكن البوت من @BotFather
-        """)
-        return
-    
-    logger.info(f"✅ التوكن موجود: {token[:10]}...")
-    
-    # إضافة المسار
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    
-    # تشغيل البوت مع إعادة المحاولة
-    attempts = 0
-    max_attempts = 10
-    
-    while attempts < max_attempts:
-        try:
-            logger.info(f"🔧 المحاولة {attempts + 1}/{max_attempts}")
-            
-            from main import main as run_bot
-            run_bot()
-            
-        except KeyboardInterrupt:
-            logger.info("👋 تم إيقاف البوت")
-            break
-            
-        except Exception as e:
-            logger.error(f"❌ خطأ: {e}")
-            attempts += 1
-            wait = min(30 * attempts, 300)
-            logger.info(f"⏳ إعادة التشغيل بعد {wait} ثانية...")
-            time.sleep(wait)
-    
-    if attempts >= max_attempts:
-        logger.error("🛑 فشل بعد جميع المحاولات")
+    except KeyboardInterrupt:
+        print("\n👋 تم إيقاف البوت")
+        break
+        
+    except Exception as e:
+        print(f"❌ خطأ: {e}")
+        
+        if attempt < max_attempts:
+            wait_time = attempt * 10
+            print(f"⏳ إعادة التشغيل بعد {wait_time} ثانية...")
+            time.sleep(wait_time)
+        else:
+            print(f"🛑 فشل بعد {max_attempts} محاولات")
 
-if __name__ == "__main__":
-    main()
+print("\n✅ انتهى تشغيل البوت")
