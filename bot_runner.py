@@ -9,7 +9,37 @@ import time
 
 print("🚀 بدء تشغيل بوت تيليجرام...")
 print(f"🐍 إصدار Python: {sys.version}")
+aimport os
+import sys
+import time
 
+print("🚀 بدء تشغيل بوت تيليجرام...")
+
+# التحقق من التوكن
+TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+if not TOKEN:
+    print("❌ خطأ: TELEGRAM_BOT_TOKEN غير موجود!")
+    print("\n🔧 أضفه في Render:")
+    print("1. Dashboard → اختر الخدمة")
+    print("2. Environment → Add Environment Variable")
+    print("3. Key: TELEGRAM_BOT_TOKEN")
+    print("4. Value: التوكن من @BotFather")
+    sys.exit(1)
+
+print(f"✅ التوكن: {TOKEN[:10]}...")
+
+# تشغيل مع إعادة المحاولة
+while True:
+    try:
+        from main import main
+        main()
+    except KeyboardInterrupt:
+        print("\n👋 تم إيقاف البوت")
+        break
+    except Exception as e:
+        print(f"❌ خطأ: {e}")
+        print("🔄 إعادة التشغيل بعد 10 ثوان...")
+        time.sleep(10)
 # التأكد من التوكن
 TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 if not TOKEN:
