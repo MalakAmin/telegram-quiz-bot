@@ -1,0 +1,11 @@
+services:
+  - type: worker  # ✅ ليس web بل worker
+    name: telegram-quiz-bot
+    env: python
+    region: frankfurt
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot_runner.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false  # سيطالبك بإدخاله
+    pythonVersion: "3.11"
